@@ -1,0 +1,80 @@
+services:
+  # Casino Game Server
+  casino-server:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      - FLASK_ENV=development
+    networks:
+      - casino-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/user/balance?userId=123"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  # Positive Tests Runner
+  test-positive:
+    build: .
+    depends_on:
+      casino-server:
+        condition: service_healthy
+    environment:
+      - PYTHONPATH=/app
+      - API_BASE_URL=http://casino-server:8000
+    networks:
+      - casino-network
+    command: >
+      sh -c "
+        echo '🧪 Running Positive Tests...' &&
+        python -m pytest tests/test_positive.py -v --html=reports/positive_report.html --self-contained-html &&
+        echo '✅ Positive Tests Completed!'
+      "
+    volumes:
+      - ./reports:/app/reports
+
+  # Negative Tests Runner  
+  test-negative:
+    build: .
+    depends_on:
+      casino-server:
+        condition: service_healthy
+    environment:
+      - PYTHONPATH=/app
+      - API_BASE_URL=http://casino-server:8000
+    networks:
+      - casino-network
+    command: >
+      sh -c "
+        echo '🧪 Running Negative Tests...' &&
+        python -m pytest tests/test_negative.py -v --html=reports/negative_report.html --self-contained-html &&
+        echo '✅ Negative Tests Completed!'
+      "
+    volumes:
+      - ./reports:/app/reports
+
+  # E2E Tests Runner
+  test-e2e:
+    build: .
+    depends_on:
+      casino-server:
+        condition: service_healthy
+    environment:
+      - PYTHONPATH=/app
+      - API_BASE_URL=http://casino-server:8000
+    networks:
+      - casino-network
+    command: >
+      sh -c "
+        echo '🧪 Running E2E Tests with Logging...' &&
+        python -m pytest tests/test_e2e.py -s -v --log-cli-level=INFO --html=reports/e2e_report.html --self-contained-html &&
+        echo '✅ E2E Tests Completed!'
+      "
+    volumes:
+      - ./reports:/app/reports
+
+networks:
+  casino-network:
+    driver: bridge

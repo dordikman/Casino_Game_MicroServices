@@ -1,0 +1,9 @@
+# Casino Game Microservices - Server Dependencies
+# Add your FastAPI and other server dependencies here
+
+flask==3.0.0
+
+# Testing Dependencies
+pytest==7.4.3
+requests==2.31.0
+pytest-html==4.1.1 
