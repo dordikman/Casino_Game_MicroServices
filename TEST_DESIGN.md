@@ -197,9 +197,9 @@ LogIn class :
 class LogIn:
     def __init__(self, driver):
         self.driver = driver
-        self.username_field = (By.ID, "username") // depends
-        self.password_field = (By.ID, "password") // depends
-        self.login_button = (By.ID, "login_button") // depends
+        self.username_field = (By.ID, "username")  #depends
+        self.password_field = (By.ID, "password")  #depends
+        self.login_button = (By.ID, "login_button") #depends
 
     def navigate(self):
         self.driver.get("https://example.com/login")
